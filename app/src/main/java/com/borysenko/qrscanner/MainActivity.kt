@@ -1,38 +1,31 @@
 package com.borysenko.qrscanner
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
-import me.dm7.barcodescanner.zxing.ZXingScannerView
-import android.view.View
-import com.google.zxing.Result
+import androidx.appcompat.app.AppCompatActivity
+import com.google.zxing.integration.android.IntentIntegrator
 
 
-class MainActivity : AppCompatActivity(), ZXingScannerView.ResultHandler{
+class MainActivity : AppCompatActivity() {
 
-    private var zXingScannerView: ZXingScannerView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        IntentIntegrator(this).initiateScan()
     }
 
-    fun scan(view: View) {
-        zXingScannerView = ZXingScannerView(applicationContext)
-        setContentView(zXingScannerView)
-        zXingScannerView!!.setResultHandler(this)
-        zXingScannerView!!.startCamera()
-
-    }
-
-    override fun onPause() {
-        super.onPause()
-        zXingScannerView!!.stopCamera()
-    }
-
-    override fun handleResult(result: Result) {
-        Toast.makeText(applicationContext, result.text, Toast.LENGTH_SHORT).show()
-        zXingScannerView!!.resumeCameraPreview(this)
-
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+        if (result != null) {
+            if (result.contents == null) {
+                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
     }
 }
